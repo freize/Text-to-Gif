@@ -3,741 +3,944 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Telegram текст-аниматор | Эффект печати с видео</title>
-    <!-- Шрифты Google Fonts для красивого оформления -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Telegram КвадратАниматор | Смайлы + GIF запись</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
-            user-select: none; /* предотвращаем случайное выделение во время анимации */
         }
-
         body {
-            background: linear-gradient(145deg, #1a1e2c 0%, #0f121c 100%);
+            background: radial-gradient(circle at 20% 30%, #0c1122, #03050b);
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            margin: 0;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            padding: 20px;
-            margin: 0;
         }
-
-        /* основной карточный контейнер */
-        .app-container {
+        .app-card {
             max-width: 1400px;
             width: 100%;
-            background: rgba(22, 26, 40, 0.75);
-            backdrop-filter: blur(8px);
-            border-radius: 3rem;
+            background: rgba(8, 12, 22, 0.85);
+            backdrop-filter: blur(14px);
+            border-radius: 2.5rem;
             padding: 1.5rem;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 40px rgba(0,0,0,0.6);
         }
-
-        /* грид: панель управления + превью */
-        .editor-layout {
+        .two-columns {
             display: grid;
             grid-template-columns: 1fr 1.2fr;
             gap: 1.8rem;
-            flex-wrap: wrap;
         }
-
-        /* панель управления */
-        .controls-panel {
-            background: rgba(12, 15, 24, 0.7);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        @media (max-width: 780px) {
+            .two-columns { grid-template-columns: 1fr; }
+        }
+        .control-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 1.8rem;
+            padding: 1.4rem;
             display: flex;
             flex-direction: column;
-            gap: 1.4rem;
+            gap: 1.2rem;
         }
-
-        .textarea-group {
+        .editor-header {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        label {
-            font-weight: 500;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            color: #b9c3e6;
-            text-transform: uppercase;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
             gap: 8px;
         }
-
+        .badge {
+            font-size: 0.7rem;
+            background: #1b2340;
+            padding: 4px 12px;
+            border-radius: 2rem;
+            color: #b5c7ff;
+        }
+        .rich-editor {
+            background: #05080f;
+            border-radius: 1.5rem;
+            padding: 0.7rem;
+            border: 1px solid #2d385a;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #2a3250;
+            align-items: center;
+        }
+        .tool-btn {
+            background: #121725;
+            border: none;
+            border-radius: 2rem;
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #eef3ff;
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tool-btn:hover {
+            background: #2c3557;
+            transform: scale(0.97);
+        }
+        /* убираем лишний кружок, оставляя только цветовой пикер */
+        .color-picker-simple {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1b2338;
+            padding: 4px 12px 4px 8px;
+            border-radius: 2.5rem;
+        }
+        .color-picker-simple span {
+            color: #f0f3ff;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        .color-picker-simple input {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            padding: 0;
+            background: transparent;
+        }
+        /* меню со смайлами */
+        .emoji-menu {
+            position: relative;
+            display: inline-block;
+        }
+        .emoji-button {
+            background: #1f2a48;
+            border-radius: 2rem;
+            padding: 6px 14px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            color: white;
+        }
+        .emoji-dropdown {
+            position: absolute;
+            top: 35px;
+            left: 0;
+            background: #0f1422;
+            border-radius: 1.2rem;
+            padding: 10px;
+            width: 260px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            z-index: 100;
+            border: 1px solid #3a4570;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .emoji-dropdown span {
+            font-size: 1.4rem;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.1s;
+            padding: 4px;
+            border-radius: 12px;
+        }
+        .emoji-dropdown span:hover {
+            background: #2e3b62;
+            transform: scale(1.1);
+        }
         textarea {
-            background: #0b0e16;
-            border: 1px solid #2e3a5c;
+            width: 100%;
+            background: #0a0f18;
+            border: 1px solid #2e3b5e;
             border-radius: 1.2rem;
             padding: 1rem;
-            color: #f0f3ff;
-            font-family: 'Inter', monospace;
-            font-size: 1rem;
+            color: #eef3ff;
+            font-family: 'Menlo', 'Fira Code', monospace;
+            font-size: 0.85rem;
             line-height: 1.5;
             resize: vertical;
-            transition: all 0.2s;
-            font-weight: 500;
+            white-space: pre-wrap;
         }
-
         textarea:focus {
             outline: none;
             border-color: #7c8bff;
-            box-shadow: 0 0 0 2px rgba(124, 139, 255, 0.3);
         }
-
-        /* сетка настроек */
-        .style-grid {
+        .param-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 0.8rem;
         }
-
-        .param-card {
-            background: #0f1320;
+        .param-item {
+            background: #0b0f1a;
             border-radius: 1.2rem;
-            padding: 0.8rem 1rem;
+            padding: 0.7rem;
+        }
+        .param-item label {
+            font-size: 0.7rem;
+            color: #c6d0ff;
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .param-item span {
+            display: inline-block;
+            background: #1e253f;
+            padding: 2px 10px;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-left: 8px;
+        }
+        /* компактные цветовые пикеры */
+        .color-compact {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .param-card label {
-            text-transform: none;
-            font-size: 0.75rem;
-            color: #9aa5cf;
-        }
-
-        input, select {
-            background: #1a1f2e;
-            border: 1px solid #2a3448;
+            align-items: center;
+            gap: 8px;
+            background: #12172a;
             border-radius: 1rem;
-            padding: 0.6rem 0.8rem;
-            color: white;
-            font-family: inherit;
-            font-size: 0.9rem;
+            padding: 4px 8px;
+            border: 1px solid #2f3b60;
+        }
+        .color-compact span {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+            font-size: 0.75rem;
+            color: #ccd6ff;
+        }
+        .color-compact input {
+            width: 36px;
+            height: 36px;
+            border-radius: 1rem;
+            border: 1px solid #7c8bff;
             cursor: pointer;
+            background: transparent;
+            padding: 2px;
         }
-
-        input[type="color"] {
-            height: 40px;
-            padding: 4px;
-            background: #1a1f2e;
+        select, input:not([type="color"]), .file-label {
+            background: #12172a;
+            border: 1px solid #2f3b60;
+            border-radius: 1rem;
+            padding: 0.5rem 0.7rem;
+            color: white;
+            width: 100%;
+            font-size: 0.8rem;
         }
-
-        .button-group {
+        .file-label {
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+            background: #1c233b;
+            color: #eef3ff;
+        }
+        input[type="file"] { display: none; }
+        .button-row {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
             margin-top: 0.5rem;
         }
-
         .btn {
             flex: 1;
-            background: linear-gradient(135deg, #2a3560, #161c30);
+            background: #20273f;
             border: none;
             border-radius: 2rem;
-            padding: 0.8rem 0;
+            padding: 0.7rem 0;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            color: #eef3ff;
-            font-size: 0.9rem;
+            color: #dce5ff;
             cursor: pointer;
             transition: 0.2s;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            border: 0.5px solid rgba(255, 255, 255, 0.1);
         }
-
         .btn-primary {
-            background: linear-gradient(135deg, #5f6eff, #3a47c9);
+            background: linear-gradient(95deg, #5f6eff, #3843c4);
             color: white;
-            text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(79, 94, 255, 0.3);
         }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(135deg, #7c8bff, #4c5be0);
-            box-shadow: 0 8px 18px rgba(79, 106, 255, 0.3);
+        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.05);}
+        .status {
+            background: #03050b;
+            border-radius: 2rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            text-align: center;
+            color: #d4e0ff;
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        .btn-danger {
-            background: #2a1f2f;
-            color: #ffa6c9;
-        }
-
         .preview-area {
-            background: #0a0d16;
+            background: #00000020;
             border-radius: 2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 1rem;
-            border: 1px solid rgba(255,255,255,0.05);
+            gap: 1rem;
         }
-
         canvas {
-            background: #000000;
+            background: #0f121e;
             border-radius: 1.5rem;
-            box-shadow: 0 20px 35px -12px black;
+            box-shadow: 0 20px 30px -10px black;
             max-width: 100%;
             height: auto;
-            display: block;
-            margin: 0 auto;
             cursor: pointer;
         }
-
-        .status {
-            font-size: 0.8rem;
-            margin-top: 12px;
-            background: #0b0e18;
-            padding: 8px 14px;
-            border-radius: 40px;
-            color: #b3c7ff;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        .download-link {
-            text-decoration: none;
+        .download-block {
+            display: none;
             width: 100%;
+            gap: 0.6rem;
         }
-
-        hr {
-            border-color: #2e3a5c;
-            margin: 5px 0;
-        }
-
-        @media (max-width: 780px) {
-            .editor-layout {
-                grid-template-columns: 1fr;
-                gap: 1.2rem;
-            }
-            .app-container {
-                padding: 1rem;
-            }
+        hr { border-color: #2e3856; margin: 6px 0; }
+        .helper-text {
+            font-size: 0.7rem;
+            color: #b5c7ff;
+            margin-top: 4px;
         }
     </style>
 </head>
 <body>
-
-<div class="app-container">
-    <div class="editor-layout">
-        <!-- Левая панель: текст и настройки -->
-        <div class="controls-panel">
-            <div class="textarea-group">
-                <label>📝 ТВОЙ ТЕКСТ (поддерживает смайлы 🎉✨)</label>
-                <textarea id="userText" rows="4" placeholder="Напиши новость или поздравление... например: 🔥 СРОЧНО! Новая функция уже здесь! ✨&#10;Подробности внутри канала..."></textarea>
+<div class="app-card">
+    <div class="two-columns">
+        <!-- ЛЕВАЯ ПАНЕЛЬ -->
+        <div class="control-panel">
+            <div class="editor-header">
+                <span style="font-weight:600; color:#f0f3ff;">🎨 Визуальный редактор цвета + смайлы</span>
+                <span class="badge">Выдели текст → выбери цвет → нажми "Применить цвет"</span>
+            </div>
+            <div class="rich-editor">
+                <div class="toolbar">
+                    <!-- Выбор цвета без лишнего кружка -->
+                    <div class="color-picker-simple">
+                        <span>🎨 Цвет:</span>
+                        <input type="color" id="visibleColorPicker" value="#FFD966">
+                    </div>
+                    <button id="applyColorBtn" class="tool-btn" style="background:#38487c;">✨ Применить цвет</button>
+                    <button id="clearFormatBtn" class="tool-btn">🗑️ Удалить теги</button>
+                    
+                    <!-- Меню смайлов -->
+                    <div class="emoji-menu">
+                        <button id="emojiBtn" class="emoji-button">😊 Смайлы</button>
+                        <div id="emojiDropdown" class="emoji-dropdown">
+                            <!-- популярные emoji -->
+                            <span>😀</span><span>😂</span><span>❤️</span><span>🔥</span><span>✨</span><span>🎉</span>
+                            <span>👍</span><span>😍</span><span>🥳</span><span>🤔</span><span>💡</span><span>⚡</span>
+                            <span>🎈</span><span>⭐</span><span>🌟</span><span>💎</span><span>🎁</span><span>🔔</span>
+                            <span>📢</span><span>💬</span><span>📌</span><span>✅</span><span>❌</span><span>⚠️</span>
+                            <span>🔴</span><span>🟢</span><span>🔵</span><span>🟡</span><span>💯</span><span>❗</span>
+                        </div>
+                    </div>
+                </div>
+                <textarea id="richText" rows="5" placeholder="Напишите текст новости или анонса... выделите часть текста и измените цвет, добавьте смайлы"></textarea>
+                <div class="helper-text">
+                    💡 Поддерживаются смайлы и переносы. Цветные участки: [color=#RRGGBB]текст[/color] — вставляется автоматически.
+                </div>
             </div>
 
-            <div class="style-grid">
-                <div class="param-card">
-                    <label>🎨 Цвет текста</label>
-                    <input type="color" id="textColor" value="#FFE484">
-                </div>
-                <div class="param-card">
-                    <label>🖼️ Цвет фона</label>
-                    <input type="color" id="bgColor" value="#0F172A">
-                </div>
-                <div class="param-card">
-                    <label>✍️ Жирный</label>
-                    <select id="fontWeight">
-                        <option value="normal">Обычный</option>
-                        <option value="bold" selected>Жирный (Bold)</option>
-                        <option value="800">Экстра жирный</option>
+            <div class="param-grid">
+                <div class="param-item">
+                    <label>📐 Формат (Telegram)</label>
+                    <select id="aspectSelect">
+                        <option value="1:1">Квадрат 1:1 (лучший)</option>
+                        <option value="4:5">Вертикаль 4:5</option>
+                        <option value="16:9">Горизонт 16:9</option>
                     </select>
                 </div>
-                <div class="param-card">
-                    <label>📐 Курсив</label>
-                    <select id="fontStyle">
-                        <option value="normal">Обычный</option>
-                        <option value="italic">Курсив</option>
-                    </select>
-                </div>
-                <div class="param-card">
+                <div class="param-item">
                     <label>⚡ Скорость печати (мс/символ)</label>
-                    <input type="range" id="speedRange" min="20" max="150" value="55" step="5">
-                    <span id="speedValue" style="font-size:0.75rem; text-align:center;">55 мс</span>
+                    <input type="range" id="typeSpeed" min="20" max="130" value="48" step="5">
+                    <span id="speedVal">48 мс</span>
                 </div>
-                <div class="param-card">
-                    <label>⏸️ Пауза после текста (сек)</label>
-                    <input type="range" id="pauseRange" min="0.5" max="5" step="0.2" value="2.2">
-                    <span id="pauseValue" style="font-size:0.75rem; text-align:center;">2.2 сек</span>
+                <div class="param-item">
+                    <label>⏸️ Пауза в конце (сек)</label>
+                    <input type="range" id="pauseDur" min="0.8" max="5" step="0.2" value="2.5">
+                    <span id="pauseVal">2.5 сек</span>
+                </div>
+                <div class="param-item">
+                    <label>🎬 Фон</label>
+                    <select id="bgType">
+                        <option value="color">Цветной фон</option>
+                        <option value="image">Изображение</option>
+                        <option value="video">Видео / GIF</option>
+                    </select>
+                </div>
+                <div class="param-item" id="colorBgDiv">
+                    <label>🎨 Цвет фона</label>
+                    <div class="color-compact">
+                        <span>Цвет:</span>
+                        <input type="color" id="bgColor" value="#131a2c">
+                    </div>
+                </div>
+                <div class="param-item" id="fileBgDiv" style="display: none;">
+                    <label>📁 Загрузить фон</label>
+                    <label class="file-label" for="bgFileInput">📂 Выбрать файл</label>
+                    <input type="file" id="bgFileInput" accept="image/jpeg,image/png,image/gif,video/mp4,video/webm">
+                    <div id="fileNameDisplay" style="font-size: 0.65rem; margin-top: 5px; color:#b5c7ff;"></div>
+                </div>
+                <div class="param-item">
+                    <label>✏️ Базовый цвет текста</label>
+                    <div class="color-compact">
+                        <span>Цвет:</span>
+                        <input type="color" id="defaultTextColor" value="#FFFFFF">
+                    </div>
                 </div>
             </div>
-            
-            <div class="button-group">
-                <button class="btn" id="previewBtn">▶ ПРЕДПРОСМОТР (цикл)</button>
-                <button class="btn btn-primary" id="recordBtn">🎥 ЗАПИСАТЬ ВИДЕО (WebM)</button>
+
+            <div class="button-row">
+                <button class="btn" id="previewLoopBtn">🔄 Live-цикл (превью)</button>
+                <button class="btn btn-primary" id="recordVideoBtn">🎬 Записать GIF (WebM)</button>
             </div>
-            <div class="button-group" id="downloadArea" style="display: none;">
-                <a id="downloadLink" class="download-link" download="telegram_text_animation.webm">
-                    <button class="btn" style="background: #2f5e3a;">💾 СКАЧАТЬ ВИДЕО (как GIF)</button>
-                </a>
-                <button class="btn" id="resetRecordBtn">↺ СБРОСИТЬ ЗАПИСЬ</button>
+            <div class="download-block" id="downloadArea">
+                <a id="downloadLink" download="telegram_animation.webm" style="flex:1"><button class="btn" style="background:#2d5a3b;">💾 Скачать GIF</button></a>
+                <button class="btn" id="resetRecordBtn">🗑️ Сброс записи</button>
             </div>
-            <div class="status" id="statusMsg">
-                ⚡ Готово. Нажми "Записать видео" — получишь файл для Telegram
-            </div>
-            <div style="font-size: 0.7rem; text-align: center; opacity: 0.6;">
-                🎬 Видео без звука, Telegram покажет как анимированный GIF.<br>
-                Эмодзи и любые символы поддерживаются.
+            <div class="status" id="globalStatus">
+                ✨ Готово. Выделите текст → выберите цвет → нажмите «Применить цвет». Добавляйте смайлы.
             </div>
         </div>
 
-        <!-- Правая панель: Canvas предпросмотр -->
+        <!-- ПРАВАЯ ПАНЕЛЬ: ПРЕВЬЮ -->
         <div class="preview-area">
-            <canvas id="animationCanvas" width="720" height="400" style="width:100%; height: auto; background: #0F172A;"></canvas>
-            <div class="status" id="previewStatus">
-                👁️ Предпросмотр анимации (кликни Preview)
-            </div>
+            <canvas id="mainCanvas" width="800" height="800" style="width:100%; height:auto; max-width:500px; border-radius: 2rem;"></canvas>
+            <div class="status" id="canvasStatus">🎬 Предпросмотр анимации</div>
         </div>
     </div>
 </div>
 
 <script>
     (function(){
-        // ---------- DOM элементы ----------
-        const canvas = document.getElementById('animationCanvas');
-        const ctx = canvas.getContext('2d');
-        const textarea = document.getElementById('userText');
-        const textColorPicker = document.getElementById('textColor');
+        // ----- DOM -----
+        const canvas = document.getElementById('mainCanvas');
+        let ctx = canvas.getContext('2d');
+        const richTextarea = document.getElementById('richText');
+        const aspectSelect = document.getElementById('aspectSelect');
+        const typeSpeedSlider = document.getElementById('typeSpeed');
+        const speedSpan = document.getElementById('speedVal');
+        const pauseSlider = document.getElementById('pauseDur');
+        const pauseSpan = document.getElementById('pauseVal');
+        const bgTypeSelect = document.getElementById('bgType');
+        const colorBgDiv = document.getElementById('colorBgDiv');
+        const fileBgDiv = document.getElementById('fileBgDiv');
         const bgColorPicker = document.getElementById('bgColor');
-        const fontWeightSelect = document.getElementById('fontWeight');
-        const fontStyleSelect = document.getElementById('fontStyle');
-        const speedSlider = document.getElementById('speedRange');
-        const speedSpan = document.getElementById('speedValue');
-        const pauseSlider = document.getElementById('pauseRange');
-        const pauseSpan = document.getElementById('pauseValue');
-        const previewBtn = document.getElementById('previewBtn');
-        const recordBtn = document.getElementById('recordBtn');
+        const defaultTextColorPicker = document.getElementById('defaultTextColor');
+        const bgFileInput = document.getElementById('bgFileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const previewLoopBtn = document.getElementById('previewLoopBtn');
+        const recordVideoBtn = document.getElementById('recordVideoBtn');
         const downloadArea = document.getElementById('downloadArea');
         const downloadLink = document.getElementById('downloadLink');
         const resetRecordBtn = document.getElementById('resetRecordBtn');
-        const statusMsgDiv = document.getElementById('statusMsg');
-        const previewStatusDiv = document.getElementById('previewStatus');
-
-        // ---------- конфигурация и переменные состояния ----------
-        let currentAnimationFrame = null;       // requestAnimationFrame или таймеры анимации
-        let animationActive = false;            // идет ли анимация (печать / пауза)
-        let isRecording = false;                // идет ли запись видео
-        let recorder = null;                    // MediaRecorder
-        let recordedChunks = [];
-        let canvasStream = null;                // MediaStream от canvas
-        let animationInterval = null;            // основной интервал печати
-        let currentCharIndex = 0;               // текущий индекс символа (для анимации печати)
-        let fullTextArray = [];                  // массив символов из текста
-        let animationLoopTimer = null;           // для остановки prev/record
-        let pauseTimeout = null;
-        let isPreviewMode = false;               // режим предпросмотра (цикличный)
+        const globalStatus = document.getElementById('globalStatus');
+        const canvasStatus = document.getElementById('canvasStatus');
         
-        // настройки анимации
-        let typeSpeed = 55;      // мс/символ
-        let pauseDuration = 2200; // мс
+        // инструменты редактора
+        const visibleColorPicker = document.getElementById('visibleColorPicker');
+        const applyColorBtn = document.getElementById('applyColorBtn');
+        const clearFormatBtn = document.getElementById('clearFormatBtn');
         
-        // фиксированные размеры canvas (720x400 оптимально для соцсетей)
-        const CANVAS_W = 720;
-        const CANVAS_H = 400;
-        canvas.width = CANVAS_W;
-        canvas.height = CANVAS_H;
+        // смайлы
+        const emojiBtn = document.getElementById('emojiBtn');
+        const emojiDropdown = document.getElementById('emojiDropdown');
         
-        // опции шрифта и отступы
-        let baseFontSize = 28;    // базовый размер, но адаптируем под длину текста чуть ниже
-        let lineHeight = 1.45;
-        let horizontalPadding = 40;
-        let verticalPadding = 45;
+        let currentSelectedColor = visibleColorPicker.value;
+        visibleColorPicker.addEventListener('input', (e) => { currentSelectedColor = e.target.value; });
         
-        // ------------------- вспомогательные функции -------------------
-        function updateSpeedValue() {
-            typeSpeed = parseInt(speedSlider.value, 10);
-            speedSpan.innerText = typeSpeed + " мс";
-        }
-        
-        function updatePauseValue() {
-            pauseDuration = parseFloat(pauseSlider.value) * 1000;
-            pauseSpan.innerText = parseFloat(pauseSlider.value).toFixed(1) + " сек";
-        }
-        
-        speedSlider.addEventListener('input', () => { updateSpeedValue(); });
-        pauseSlider.addEventListener('input', () => { updatePauseValue(); });
-        updateSpeedValue();
-        updatePauseValue();
-        
-        // динамический размер шрифта в зависимости от длины текста (чтобы влезало)
-        function getOptimalFontSize(text) {
-            let rawLength = text.length;
-            if (rawLength < 40) return 32;
-            if (rawLength < 100) return 28;
-            if (rawLength < 200) return 24;
-            return 21;
-        }
-        
-        // Функция разбивки текста на строки с учётом ширины canvas и отступов
-        function wrapText(ctx, text, maxWidth, maxCharsLimit = Infinity) {
-            // обрезаем текст до определённого количества символов (для анимации)
-            let truncatedText = text;
-            if (maxCharsLimit !== Infinity && maxCharsLimit < text.length) {
-                truncatedText = text.substring(0, maxCharsLimit);
+        // меню смайлов
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = emojiDropdown.style.display === 'grid';
+            emojiDropdown.style.display = isVisible ? 'none' : 'grid';
+        });
+        document.addEventListener('click', (e) => {
+            if (!emojiBtn.contains(e.target) && !emojiDropdown.contains(e.target)) {
+                emojiDropdown.style.display = 'none';
             }
-            const words = truncatedText.split(/(\s+)/); // сохраняем пробелы
-            const lines = [];
-            let currentLine = '';
-            
-            for (let i = 0; i < words.length; i++) {
-                const word = words[i];
-                const testLine = currentLine + word;
-                const metrics = ctx.measureText(testLine);
-                const testWidth = metrics.width;
-                if (testWidth > maxWidth && currentLine.length > 0) {
-                    lines.push(currentLine);
-                    currentLine = word;
+        });
+        // вставка смайла в текст
+        const emojis = document.querySelectorAll('#emojiDropdown span');
+        emojis.forEach(emojiSpan => {
+            emojiSpan.addEventListener('click', () => {
+                const emoji = emojiSpan.innerText;
+                const start = richTextarea.selectionStart;
+                const end = richTextarea.selectionEnd;
+                const text = richTextarea.value;
+                const newText = text.substring(0, start) + emoji + text.substring(end);
+                richTextarea.value = newText;
+                richTextarea.focus();
+                const newPos = start + emoji.length;
+                richTextarea.setSelectionRange(newPos, newPos);
+                richTextarea.dispatchEvent(new Event('input'));
+                emojiDropdown.style.display = 'none';
+            });
+        });
+        
+        // ------ ФУНКЦИИ РАБОТЫ С ТЕКСТОМ И ТЕГАМИ ------
+        function wrapSelectedTextWithColor(textarea, colorHex) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            if (start === end) {
+                globalStatus.innerText = "⚠️ Сначала выделите текст (зажмите и проведите мышью)";
+                return false;
+            }
+            const selected = textarea.value.substring(start, end);
+            const before = textarea.value.substring(0, start);
+            const after = textarea.value.substring(end);
+            const colored = `[color=${colorHex}]${selected}[/color]`;
+            textarea.value = before + colored + after;
+            textarea.focus();
+            const newCursorPos = start + colored.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            textarea.dispatchEvent(new Event('input'));
+            globalStatus.innerText = `✅ Цвет ${colorHex} применён.`;
+            return true;
+        }
+        
+        function clearColorTagsFromSelection(textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            let text = textarea.value;
+            if (start === end) {
+                const cleaned = text.replace(/\[color=#[0-9A-Fa-f]{6}\]|\[\/color\]/g, '');
+                textarea.value = cleaned;
+                globalStatus.innerText = "🧼 Удалены все цветовые теги";
+            } else {
+                let selected = text.substring(start, end);
+                const cleanedSel = selected.replace(/\[color=#[0-9A-Fa-f]{6}\]|\[\/color\]/g, '');
+                const newText = text.substring(0, start) + cleanedSel + text.substring(end);
+                textarea.value = newText;
+                textarea.focus();
+                textarea.setSelectionRange(start, start + cleanedSel.length);
+                globalStatus.innerText = "✅ Цветовые теги удалены из выделенного фрагмента";
+            }
+            textarea.dispatchEvent(new Event('input'));
+        }
+        
+        applyColorBtn.addEventListener('click', () => {
+            if (!currentSelectedColor.match(/^#[0-9A-Fa-f]{6}$/i)) currentSelectedColor = "#FFD966";
+            wrapSelectedTextWithColor(richTextarea, currentSelectedColor);
+        });
+        clearFormatBtn.addEventListener('click', () => {
+            clearColorTagsFromSelection(richTextarea);
+        });
+        
+        // ---------- Парсинг цветных сегментов ----------
+        let segments = [];           
+        let totalVisibleChars = 0;
+        let defaultColor = '#FFFFFF';
+        
+        function parseColoredText(rawText, defaultCol) {
+            const result = [];
+            let currentColor = defaultCol;
+            let i = 0;
+            const len = rawText.length;
+            let buffer = '';
+            const pushBuffer = () => {
+                if (buffer.length) {
+                    result.push({ text: buffer, color: currentColor });
+                    buffer = '';
+                }
+            };
+            while (i < len) {
+                if (rawText[i] === '[' && i+5 < len && rawText.slice(i, i+6) === '[color') {
+                    let closing = rawText.indexOf(']', i);
+                    if (closing !== -1) {
+                        const inner = rawText.slice(i+6, closing);
+                        if (inner.startsWith('=')) {
+                            let colorVal = inner.slice(1).trim();
+                            if (colorVal.match(/^#[0-9A-Fa-f]{6}$/i)) {
+                                pushBuffer();
+                                currentColor = colorVal;
+                                i = closing + 1;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                else if (rawText[i] === '[' && i+7 < len && rawText.slice(i, i+8) === '[/color]') {
+                    pushBuffer();
+                    currentColor = defaultCol;
+                    i += 8;
+                    continue;
+                }
+                buffer += rawText[i];
+                i++;
+            }
+            pushBuffer();
+            return result;
+        }
+        
+        function updateSegments() {
+            defaultColor = defaultTextColorPicker.value;
+            const raw = richTextarea.value;
+            segments = parseColoredText(raw, defaultColor);
+            totalVisibleChars = segments.reduce((sum, s) => sum + s.text.length, 0);
+            return segments;
+        }
+        
+        function getSubSegmentsUntil(visibleCount) {
+            let rem = visibleCount;
+            const out = [];
+            for (let seg of segments) {
+                const len = seg.text.length;
+                if (rem <= 0) break;
+                if (len <= rem) {
+                    out.push({ text: seg.text, color: seg.color });
+                    rem -= len;
                 } else {
-                    currentLine = testLine;
+                    out.push({ text: seg.text.slice(0, rem), color: seg.color });
+                    rem = 0;
                 }
             }
-            if (currentLine) lines.push(currentLine);
+            return out;
+        }
+        
+        // ------ Размеры canvas (адаптив) ------
+        let canvasWidth = 800, canvasHeight = 800;
+        function updateCanvasSizeByAspect() {
+            const aspect = aspectSelect.value;
+            if (aspect === '1:1') { canvasWidth = 800; canvasHeight = 800; }
+            else if (aspect === '4:5') { canvasWidth = 720; canvasHeight = 900; }
+            else if (aspect === '16:9') { canvasWidth = 960; canvasHeight = 540; }
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            renderFrame();
+        }
+        aspectSelect.addEventListener('change', updateCanvasSizeByAspect);
+        
+        // ----- Фон: изображение или видео -----
+        let currentBgType = 'color';
+        let bgImage = null;
+        let bgVideo = null;
+        let bgVideoUpdater = null;
+        
+        function renderBackground() {
+            if (currentBgType === 'color') {
+                ctx.fillStyle = bgColorPicker.value;
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            } else if (currentBgType === 'image' && bgImage && bgImage.complete && bgImage.naturalWidth) {
+                ctx.drawImage(bgImage, 0, 0, canvasWidth, canvasHeight);
+            } else if (currentBgType === 'video' && bgVideo && bgVideo.readyState >= 2) {
+                ctx.drawImage(bgVideo, 0, 0, canvasWidth, canvasHeight);
+            } else {
+                ctx.fillStyle = '#131a2c';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
+        }
+        
+        function loadBgFile(file) {
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            if (file.type.startsWith('image/')) {
+                const img = new Image();
+                img.onload = () => {
+                    bgImage = img;
+                    if (bgVideo) { bgVideo.pause(); bgVideo = null; if(bgVideoUpdater)clearInterval(bgVideoUpdater); }
+                    fileNameDisplay.innerText = `🖼️ ${file.name}`;
+                    renderFrame();
+                };
+                img.src = url;
+            } else if (file.type.startsWith('video/')) {
+                if (bgVideo) { bgVideo.pause(); bgVideo = null; if(bgVideoUpdater)clearInterval(bgVideoUpdater); }
+                const video = document.createElement('video');
+                video.src = url;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.autoplay = true;
+                video.onloadeddata = () => {
+                    bgVideo = video;
+                    video.play().catch(e=>console.warn);
+                    fileNameDisplay.innerText = `🎬 видео ${file.name}`;
+                    if (bgVideoUpdater) clearInterval(bgVideoUpdater);
+                    bgVideoUpdater = setInterval(() => {
+                        if (bgVideo && !bgVideo.paused && !animationActive) renderFrame();
+                        else if (bgVideo && !bgVideo.paused && animationActive === false) renderFrame();
+                    }, 40);
+                    renderFrame();
+                };
+                video.load();
+            }
+        }
+        
+        bgFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) loadBgFile(e.target.files[0]);
+        });
+        bgTypeSelect.addEventListener('change', (e) => {
+            currentBgType = e.target.value;
+            colorBgDiv.style.display = currentBgType === 'color' ? 'block' : 'none';
+            fileBgDiv.style.display = (currentBgType === 'image' || currentBgType === 'video') ? 'block' : 'none';
+            renderFrame();
+        });
+        bgTypeSelect.dispatchEvent(new Event('change'));
+        
+        // ----- Отрисовка текста -----
+        let cachedFontSize = 32;
+        function wrapLinesWithColors(ctx, subSegments, maxWidth) {
+            const lines = []; 
+            let currentLineSegs = [];
+            let currentLineWidth = 0;
+            const flush = () => {
+                if (currentLineSegs.length) {
+                    lines.push([...currentLineSegs]);
+                    currentLineSegs = [];
+                    currentLineWidth = 0;
+                }
+            };
+            for (let seg of subSegments) {
+                const words = seg.text.split(/(\s+)/);
+                for (let w of words) {
+                    if (w === "") continue;
+                    ctx.font = `700 ${cachedFontSize}px 'Inter', 'Segoe UI Emoji', 'Apple Color Emoji'`;
+                    const ww = ctx.measureText(w).width;
+                    if (currentLineWidth + ww > maxWidth && currentLineSegs.length > 0) flush();
+                    currentLineSegs.push({ text: w, color: seg.color });
+                    currentLineWidth += ww;
+                }
+            }
+            flush();
             return lines;
         }
         
-        // полная отрисовка canvas с текстом (до определенного индекса символов)
-        function renderCanvasForIndex(charLimitIndex) {
+        function renderFrame() {
             if (!ctx) return;
-            const bgColor = bgColorPicker.value;
-            const textColor = textColorPicker.value;
-            const fontWeight = fontWeightSelect.value;
-            const fontStyleVal = fontStyleSelect.value;
-            const rawText = textarea.value;
-            if (!rawText.trim() && charLimitIndex === 0) {
-                // пустой экран
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-                ctx.fillStyle = textColor;
-                ctx.font = `500 24px 'Inter', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif`;
-                ctx.fillText("✨ Введите текст ✨", CANVAS_W/2 - 100, CANVAS_H/2);
+            if (canvas.width !== canvasWidth || canvas.height !== canvasHeight) {
+                canvas.width = canvasWidth;
+                canvas.height = canvasHeight;
+                ctx = canvas.getContext('2d');
+            }
+            renderBackground();
+            if (totalVisibleChars === 0) {
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = `24px 'Inter'`;
+                ctx.fillText("✍️ Напишите текст, выделите и выберите цвет", canvasWidth/2-200, canvasHeight/2);
                 return;
             }
-            
-            // Определяем оптимальный шрифт
-            const dynamicFontSize = getOptimalFontSize(rawText);
-            const finalFontSize = Math.min(dynamicFontSize, 32);
-            const fontString = `${fontStyleVal} ${fontWeight} ${finalFontSize}px 'Inter', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif`;
-            ctx.font = fontString;
-            
-            // максимальная ширина строки
-            const maxTextWidth = CANVAS_W - horizontalPadding * 2;
-            
-            // получаем текст, ограниченный текущим индексом символа
-            let displayText = rawText;
-            if (charLimitIndex !== undefined && charLimitIndex < rawText.length) {
-                displayText = rawText.substring(0, charLimitIndex);
-            } else if (charLimitIndex !== undefined) {
-                displayText = rawText;
+            const subSegments = getSubSegmentsUntil(currentVisibleIndex);
+            if (subSegments.length === 0) return;
+            const maxWidth = canvasWidth - 70;
+            const fontSizeRaw = Math.min(36, Math.max(22, 280 / (totalVisibleChars/60)));
+            cachedFontSize = Math.floor(fontSizeRaw);
+            ctx.font = `700 ${cachedFontSize}px 'Inter', 'Segoe UI Emoji', 'Apple Color Emoji'`;
+            const lines = wrapLinesWithColors(ctx, subSegments, maxWidth);
+            const lineHeight = cachedFontSize * 1.45;
+            const totalH = lines.length * lineHeight;
+            let startY = (canvasHeight - totalH) / 2;
+            startY = Math.max(35, startY);
+            let yPos = startY;
+            for (let lineSegs of lines) {
+                let xPos = 35;
+                for (let seg of lineSegs) {
+                    ctx.fillStyle = seg.color;
+                    ctx.fillText(seg.text, xPos, yPos);
+                    const measure = ctx.measureText(seg.text);
+                    xPos += measure.width;
+                }
+                yPos += lineHeight;
             }
-            
-            // разбиваем на строки
-            const lines = wrapText(ctx, displayText, maxTextWidth, Infinity);
-            
-            // вычисляем общую высоту текста
-            const lineHeightPx = finalFontSize * lineHeight;
-            const totalTextHeight = lines.length * lineHeightPx;
-            let startY = (CANVAS_H - totalTextHeight) / 2;
-            startY = Math.max(verticalPadding, startY);
-            
-            // рисуем фон
-            ctx.fillStyle = bgColor;
-            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-            
-            // рисуем строки текста
-            ctx.fillStyle = textColor;
-            ctx.font = fontString;
-            ctx.textBaseline = 'top';
-            let currentY = startY;
-            for (let line of lines) {
-                ctx.fillText(line, horizontalPadding, currentY);
-                currentY += lineHeightPx;
-            }
-            
-            // рисуем мигающий курсор (только если анимация еще не дошла до конца и не на паузе, для эффекта)
-            if (charLimitIndex !== undefined && charLimitIndex < rawText.length && animationActive && !isRecording) {
-                // курсор в виде вертикальной черты в конце текста
-                const lastLine = lines[lines.length-1] || "";
-                const lastLineWidth = ctx.measureText(lastLine).width;
-                const cursorX = horizontalPadding + lastLineWidth;
-                const cursorY = startY + (lines.length-1) * lineHeightPx;
-                ctx.fillStyle = textColor;
-                ctx.fillRect(cursorX, cursorY, 2.5, finalFontSize * 0.7);
-            } else if (charLimitIndex === rawText.length && animationActive && !isRecording && (Date.now() % 800 < 400)) {
-                // небольшой курсор в конце полного текста (мигание)
-                const linesFull = wrapText(ctx, rawText, maxTextWidth, Infinity);
-                const lastLine = linesFull[linesFull.length-1] || "";
-                const lastLineWidth = ctx.measureText(lastLine).width;
-                const totalH = linesFull.length * lineHeightPx;
-                let startYfull = (CANVAS_H - totalH) / 2;
-                startYfull = Math.max(verticalPadding, startYfull);
-                const cursorX = horizontalPadding + lastLineWidth;
-                const cursorY = startYfull + (linesFull.length-1) * lineHeightPx;
-                ctx.fillStyle = textColor;
-                ctx.fillRect(cursorX, cursorY, 2.5, finalFontSize * 0.7);
-            }
-        }
-        
-        // обновить canvas без анимации (статично)
-        function renderStatic() {
-            renderCanvasForIndex(fullTextArray.length);
-        }
-        
-        // сбросить анимацию и остановить таймеры
-        function stopAnimation(resetToFullRender = true) {
-            if (animationInterval) {
-                clearInterval(animationInterval);
-                animationInterval = null;
-            }
-            if (pauseTimeout) {
-                clearTimeout(pauseTimeout);
-                pauseTimeout = null;
-            }
-            if (animationLoopTimer) {
-                cancelAnimationFrame(animationLoopTimer);
-                animationLoopTimer = null;
-            }
-            animationActive = false;
-            isPreviewMode = false;
-            if (!isRecording) {
-                // если не запись, то показываем полный текст (или статику)
-                if (resetToFullRender) {
-                    renderCanvasForIndex(fullTextArray.length);
+            // курсор
+            if (animationActive && !isRecording && currentVisibleIndex < totalVisibleChars && (Date.now() % 700 < 350)) {
+                if (lines.length) {
+                    let lastLine = lines[lines.length-1];
+                    let lastX = 35;
+                    for (let seg of lastLine) {
+                        ctx.font = `700 ${cachedFontSize}px 'Inter'`;
+                        lastX += ctx.measureText(seg.text).width;
+                    }
+                    const cursorY = startY + (lines.length-1) * lineHeight;
+                    ctx.fillStyle = defaultTextColorPicker.value;
+                    ctx.fillRect(lastX, cursorY, 3, cachedFontSize * 0.7);
                 }
             }
         }
         
-        // запуск анимации печати (один цикл: печать -> пауза -> вызов колбэка окончания)
-        function startTypewriterAnimation(onComplete, loop = false) {
-            if (animationActive) stopAnimation(false);
-            const text = textarea.value;
-            fullTextArray = [...text]; // юникод-корректный перебор
-            if (fullTextArray.length === 0) {
-                statusMsgDiv.innerText = "⚠️ Введите текст перед анимацией!";
-                renderStatic();
-                if(onComplete) onComplete();
-                return;
+        // ------ АНИМАЦИЯ ПЕЧАТИ + ЗАПИСЬ GIF ------
+        let animationActive = false;
+        let currentVisibleIndex = 0;
+        let typeInterval = null;
+        let pauseTimeout = null;
+        let previewLoopMode = false;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let canvasStream = null;
+        let typeDelay = 48;
+        let pauseDuration = 2500;
+        
+        function stopAnimation(resetToFull=false) {
+            if (typeInterval) { clearInterval(typeInterval); typeInterval = null; }
+            if (pauseTimeout) { clearTimeout(pauseTimeout); pauseTimeout = null; }
+            animationActive = false;
+            if (resetToFull) {
+                currentVisibleIndex = totalVisibleChars;
+                renderFrame();
             }
-            currentCharIndex = 0;
-            animationActive = true;
-            // начальная отрисовка пустого холста
-            renderCanvasForIndex(0);
-            
-            animationInterval = setInterval(() => {
-                if (!animationActive) return;
-                if (currentCharIndex < fullTextArray.length) {
-                    currentCharIndex++;
-                    renderCanvasForIndex(currentCharIndex);
-                } 
-                if (currentCharIndex >= fullTextArray.length) {
-                    // печать закончена
-                    clearInterval(animationInterval);
-                    animationInterval = null;
-                    // пауза перед завершением или повтором
+        }
+        
+        function advanceTyping() {
+            if (!animationActive) return;
+            if (currentVisibleIndex < totalVisibleChars) {
+                currentVisibleIndex++;
+                renderFrame();
+                if (currentVisibleIndex === totalVisibleChars) {
+                    if (typeInterval) clearInterval(typeInterval);
+                    typeInterval = null;
                     pauseTimeout = setTimeout(() => {
-                        if (!animationActive) return;
-                        if (loop) {
-                            // цикл: рестарт анимации с начала
-                            if (animationActive) {
-                                // полная перезагрузка
-                                currentCharIndex = 0;
-                                renderCanvasForIndex(0);
-                                // заново интервал
-                                if (animationInterval) clearInterval(animationInterval);
-                                animationInterval = setInterval(() => {
-                                    if (!animationActive) return;
-                                    if (currentCharIndex < fullTextArray.length) {
-                                        currentCharIndex++;
-                                        renderCanvasForIndex(currentCharIndex);
-                                    } 
-                                    if (currentCharIndex >= fullTextArray.length) {
-                                        clearInterval(animationInterval);
-                                        animationInterval = null;
-                                        pauseTimeout = setTimeout(() => {
-                                            if (animationActive && loop) {
-                                                currentCharIndex = 0;
-                                                renderCanvasForIndex(0);
-                                                // рекурсивно перезапуск
-                                                if (animationInterval) clearInterval(animationInterval);
-                                                animationInterval = setInterval(arguments.callee ? arguments.callee : ()=>{}, typeSpeed);
-                                            }
-                                        }, pauseDuration);
-                                    }
-                                }, typeSpeed);
+                        if (animationActive) {
+                            if (previewLoopMode) {
+                                currentVisibleIndex = 0;
+                                renderFrame();
+                                startTypingInterval();
+                            } else {
+                                stopAnimation(false);
+                                renderFrame();
+                                if (isRecording) finishRecording();
                             }
-                        } else {
-                            // обычный нецикличный финиш
-                            animationActive = false;
-                            if (onComplete) onComplete();
                         }
                     }, pauseDuration);
                 }
-            }, typeSpeed);
+            } else {
+                if (typeInterval) clearInterval(typeInterval);
+                typeInterval = null;
+            }
         }
         
-        // предпросмотр с бесконечным циклом
-        function startPreview() {
-            if (isRecording) {
-                statusMsgDiv.innerText = "❌ Сначала завершите запись! Нажмите Сбросить запись";
-                return;
-            }
-            stopAnimation(true);
-            isPreviewMode = true;
-            previewStatusDiv.innerText = "🔄 Предпросмотр: анимация повторяется... (Нажмите Запись)";
-            startTypewriterAnimation(() => {
-                // бесконечный цикл уже обработан аргументом, но onComplete в цикле не триггерим
-                if (isPreviewMode) {
-                    // ничего, цикл внутри
-                }
-            }, true);
+        function startTypingInterval() {
+            if (typeInterval) clearInterval(typeInterval);
+            typeInterval = setInterval(() => advanceTyping(), typeDelay);
         }
         
-        // ---------- ЗАПИСЬ ВИДЕО ----------
-        async function startRecording() {
-            if (isRecording) {
-                statusMsgDiv.innerText = "⚠️ Уже идет запись, подождите или сбросьте";
-                return;
-            }
-            if (textarea.value.trim() === "") {
-                statusMsgDiv.innerText = "✏️ Введите текст перед записью!";
-                return;
-            }
+        function startAnimation(loopMode) {
             stopAnimation(false);
-            // подготовка к записи
+            updateSegments();
+            if (totalVisibleChars === 0) {
+                globalStatus.innerText = "Текст пуст, напишите что-нибудь";
+                return false;
+            }
+            animationActive = true;
+            previewLoopMode = loopMode;
+            currentVisibleIndex = 0;
+            renderFrame();
+            startTypingInterval();
+            return true;
+        }
+        
+        async function startRecording() {
+            if (isRecording) { globalStatus.innerText = "Запись уже идёт"; return; }
+            if (richTextarea.value.trim() === "") { globalStatus.innerText = "Введите текст"; return; }
+            updateSegments();
+            if (totalVisibleChars === 0) return;
+            stopAnimation(false);
             recordedChunks = [];
-            if (canvasStream) {
-                canvasStream.getTracks().forEach(track => track.stop());
-            }
-            canvasStream = canvas.captureStream(30); // 30 fps достаточно для плавности
-            if (!canvasStream) {
-                statusMsgDiv.innerText = "❌ Ошибка создания видеопотока";
-                return;
-            }
-            const mimeType = 'video/webm';
-            if (!MediaRecorder.isTypeSupported(mimeType)) {
-                statusMsgDiv.innerText = "❌ Ваш браузер не поддерживает WebM, попробуйте другой";
-                return;
-            }
-            recorder = new MediaRecorder(canvasStream, { mimeType: mimeType, videoBitsPerSecond: 3000000 });
-            recorder.ondataavailable = (event) => {
-                if (event.data && event.data.size > 0) recordedChunks.push(event.data);
-            };
-            recorder.onstop = () => {
+            if (canvasStream) canvasStream.getTracks().forEach(t=>t.stop());
+            canvasStream = canvas.captureStream(30);
+            if (!canvasStream) { globalStatus.innerText = "Ошибка потока"; return; }
+            mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm', videoBitsPerSecond: 3500000 });
+            mediaRecorder.ondataavailable = (e) => { if(e.data.size) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
                 const blob = new Blob(recordedChunks, { type: 'video/webm' });
                 const url = URL.createObjectURL(blob);
                 downloadLink.href = url;
-                downloadArea.style.display = "flex";
-                statusMsgDiv.innerText = "✅ Видео готово! Скачайте и загрузите в Telegram (видео отобразится как GIF)";
+                downloadArea.style.display = 'flex';
+                globalStatus.innerText = "✅ GIF готов! Скачайте и отправьте в Telegram";
                 isRecording = false;
-                if (canvasStream) {
-                    canvasStream.getTracks().forEach(track => track.stop());
-                    canvasStream = null;
-                }
-                recorder = null;
-                // отобразить статичный полный текст
-                renderCanvasForIndex(fullTextArray.length);
-                animationActive = false;
-                previewStatusDiv.innerText = "🎬 Запись завершена, можно скачать";
-            };
-            
-            recorder.start(100);
-            isRecording = true;
-            statusMsgDiv.innerText = "🔴 Идет запись видео... дождитесь завершения!";
-            previewStatusDiv.innerText = "🔴 ЗАПИСЬ: анимация печати один раз + пауза";
-            // запускаем анимацию печати (один раз без цикла)
-            startTypewriterAnimation(() => {
-                // после окончания анимации и паузы останавливаем запись
-                if (recorder && recorder.state === "recording") {
-                    setTimeout(() => {
-                        if (recorder && recorder.state === "recording") {
-                            recorder.stop();
-                        }
-                        animationActive = false;
-                        isRecording = false;
-                    }, 100);
-                } else {
-                    if (recorder && recorder.state === "recording") recorder.stop();
-                    isRecording = false;
-                }
-            }, false);
-        }
-        
-        // функция сброса записи и остановки всего
-        function resetRecording() {
-            if (isRecording && recorder && recorder.state === "recording") {
-                try {
-                    recorder.stop();
-                } catch(e) {}
-                isRecording = false;
-            }
-            if (canvasStream) {
-                canvasStream.getTracks().forEach(track => track.stop());
+                if (canvasStream) canvasStream.getTracks().forEach(t=>t.stop());
                 canvasStream = null;
+                mediaRecorder = null;
+                renderFrame();
+            };
+            mediaRecorder.start(100);
+            isRecording = true;
+            previewLoopMode = false;
+            animationActive = true;
+            currentVisibleIndex = 0;
+            renderFrame();
+            startTypingInterval();
+            globalStatus.innerText = "🔴 Запись GIF-анимации...";
+        }
+        
+        function finishRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                setTimeout(() => { if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop(); }, 60);
             }
-            stopAnimation(true);
+            animationActive = false;
+        }
+        
+        function resetRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') try{ mediaRecorder.stop(); }catch(e){}
+            if (canvasStream) { canvasStream.getTracks().forEach(t=>t.stop()); canvasStream=null; }
             isRecording = false;
-            isPreviewMode = false;
-            downloadArea.style.display = "none";
-            statusMsgDiv.innerText = "⚡ Запись сброшена. Можно создать новое видео.";
-            previewStatusDiv.innerText = "✨ Режим ожидания";
-            renderStatic();
+            downloadArea.style.display = 'none';
+            stopAnimation(false);
+            previewLoopMode = false;
+            animationActive = false;
+            updateSegments();
+            currentVisibleIndex = totalVisibleChars;
+            renderFrame();
+            globalStatus.innerText = "Сброшено. Готов к новой записи";
         }
         
-        // при изменении текста или стилей – обновляем статику (если не анимация и не запись)
-        function refreshStaticOnEdit() {
-            if (!animationActive && !isRecording) {
-                fullTextArray = [...textarea.value];
-                renderStatic();
+        // ----- события -----
+        typeSpeedSlider.addEventListener('input', () => {
+            typeDelay = parseInt(typeSpeedSlider.value);
+            speedSpan.innerText = typeDelay + ' мс';
+            if (animationActive && typeInterval) {
+                clearInterval(typeInterval);
+                if (currentVisibleIndex < totalVisibleChars) startTypingInterval();
             }
-        }
-        
-        textarea.addEventListener('input', refreshStaticOnEdit);
-        textColorPicker.addEventListener('input', refreshStaticOnEdit);
-        bgColorPicker.addEventListener('input', refreshStaticOnEdit);
-        fontWeightSelect.addEventListener('input', refreshStaticOnEdit);
-        fontStyleSelect.addEventListener('input', refreshStaticOnEdit);
-        
-        // кнопки управления
-        previewBtn.addEventListener('click', () => {
-            if (isRecording) {
-                statusMsgDiv.innerText = "Сначала сбросьте запись (кнопка Сбросить запись)";
-                return;
+        });
+        pauseSlider.addEventListener('input', () => {
+            pauseDuration = parseFloat(pauseSlider.value)*1000;
+            pauseSpan.innerText = pauseSlider.value + ' сек';
+        });
+        defaultTextColorPicker.addEventListener('input', () => {
+            updateSegments();
+            renderFrame();
+        });
+        bgColorPicker.addEventListener('input', () => { renderFrame(); });
+        richTextarea.addEventListener('input', () => {
+            if (!animationActive) {
+                updateSegments();
+                currentVisibleIndex = totalVisibleChars;
+                renderFrame();
+            } else {
+                updateSegments();
+                if (currentVisibleIndex > totalVisibleChars) currentVisibleIndex = totalVisibleChars;
+                renderFrame();
             }
-            startPreview();
         });
-        
-        recordBtn.addEventListener('click', () => {
-            resetRecording(); // сбрасываем перед новой записью
-            setTimeout(() => {
-                startRecording();
-            }, 50);
+        previewLoopBtn.addEventListener('click', () => {
+            if(isRecording){ globalStatus.innerText="Сначала сбросьте запись"; return; }
+            resetRecording();
+            startAnimation(true);
+            canvasStatus.innerText = "🔄 Цикл печати";
         });
-        
+        recordVideoBtn.addEventListener('click', () => {
+            resetRecording();
+            startRecording();
+            canvasStatus.innerText = "🔴 Запись GIF...";
+        });
         resetRecordBtn.addEventListener('click', () => {
             resetRecording();
+            canvasStatus.innerText = "Готов";
         });
         
-        // инициализация статики
-        fullTextArray = [...textarea.value];
-        renderStatic();
+        updateCanvasSizeByAspect();
+        updateSegments();
+        currentVisibleIndex = totalVisibleChars;
+        renderFrame();
         
-        // добавим подсказку для смайлов
-        const defaultExample = "🎉 АНОНС! 🎉\nНовый контент уже завтра\n⚡️ Оставайся с нами ✨";
-        if (textarea.value === "") textarea.value = defaultExample;
-        refreshStaticOnEdit();
+        if (richTextarea.value.trim() === "") {
+            richTextarea.value = "[color=#FFB347]✨ СРОЧНО![/color] Новая функция уже здесь.\n[color=#6eff9e]Доступно всем[/color] 🎉\nВыделите текст, выберите цвет, добавляйте смайлы 😀🔥";
+            updateSegments();
+            currentVisibleIndex = totalVisibleChars;
+            renderFrame();
+        }
     })();
 </script>
 </body>
